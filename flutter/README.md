@@ -1,4 +1,5 @@
 ## Double extension
+
 ```dart
 import 'package:flutter/material.dart';
 import 'package:pdf/widgets.dart' as pdf_widget;

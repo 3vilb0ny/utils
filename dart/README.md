@@ -43,13 +43,13 @@ extension StringModified on String {
 
 /// Tests
 test("String format", () {
-    const String text = 'Today is %1\$ and tomorrow is %2\$';
-    final List<String> placeHolders = ['Monday', 'Tuesday'];
-    const String expected = 'Today is Monday and tomorrow is Tuesday';
+	const String text = 'Today is %1\$ and tomorrow is %2\$';
+	final List<String> placeHolders = ['Monday', 'Tuesday'];
+	const String expected = 'Today is Monday and tomorrow is Tuesday';
 
-    final String actual = text.format(placeHolders);
+	final String actual = text.format(placeHolders);
 
-    expect(actual, expected);
+	expect(actual, expected);
 });
 ```
 
