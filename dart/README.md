@@ -22,30 +22,30 @@ extension StringModified on String {
     return result;
   }
 
-	String format(List<String> params) => _interpolate(this, params);
+  String format(List<String> params) => _interpolate(this, params);
 
-	/// Interpolates the string with given parameters
-	/// The substitution sequence is %n\$, with n being the position in the list
-	/// 1 based
-	String _interpolate(String string, List<String> params) {
-		String result = string;
-		for (int i = 1; i < params.length + 1; i++) {
-			result = result.replaceAll('%$i\$', params[i - 1]);
-		}
+  /// Interpolates the string with given parameters
+  /// The substitution sequence is %n\$, with n being the position in the list
+  /// 1 based
+  String _interpolate(String string, List<String> params) {
+    String result = string;
+    for (int i = 1; i < params.length + 1; i++) {
+      result = result.replaceAll('%$i\$', params[i - 1]);
+    }
 
-		return result;
-	}
+    return result;
+  }
 }
 
 /// Tests
 test("String format", () {
-	const String text = 'Today is %1\$ and tomorrow is %2\$';
-	final List<String> placeHolders = ['Monday', 'Tuesday'];
-	const String expected = 'Today is Monday and tomorrow is Tuesday';
+  const String text = 'Today is %1\$ and tomorrow is %2\$';
+  final List<String> placeHolders = ['Monday', 'Tuesday'];
+  const String expected = 'Today is Monday and tomorrow is Tuesday';
 
-	final String actual = text.format(placeHolders);
+  final String actual = text.format(placeHolders);
 
-	expect(actual, expected);
+  expect(actual, expected);
 });
 ```
 
@@ -198,21 +198,21 @@ extension Iterables<E> on Iterable<E> {
 
 /// Tests
 test("groupBy", () {
-	List<MapEntry<int, int>> x = [
-		const MapEntry<int, int>(1, 1),
-		const MapEntry<int, int>(1, 2),
-		const MapEntry<int, int>(1, 3),
-		const MapEntry<int, int>(2, 4),
-		const MapEntry<int, int>(2, 5),
-		const MapEntry<int, int>(2, 6),
-	];
+  List<MapEntry<int, int>> x = [
+    const MapEntry<int, int>(1, 1),
+    const MapEntry<int, int>(1, 2),
+    const MapEntry<int, int>(1, 3),
+    const MapEntry<int, int>(2, 4),
+    const MapEntry<int, int>(2, 5),
+    const MapEntry<int, int>(2, 6),
+  ];
 
 	expect(
-		x.groupBy((MapEntry<int, int> element) => element.key),
-		{
-			1: [const MapEntry(1, 1), const MapEntry(1, 2), const MapEntry(1, 3)],
-			2: [const MapEntry(2, 4), const MapEntry(2, 5), const MapEntry(2, 6)]
-		},
+    x.groupBy((MapEntry<int, int> element) => element.key),
+    {
+      1: [const MapEntry(1, 1), const MapEntry(1, 2), const MapEntry(1, 3)],
+      2: [const MapEntry(2, 4), const MapEntry(2, 5), const MapEntry(2, 6)]
+    },
 	);
 
 	expect([].groupBy((element) => element), {});
@@ -225,95 +225,94 @@ test("indexOf", () {
 });
 
 test("mapWithIndex", () {
-	expect([].mapWithIndex((e, i) => e * i), []);
-	expect([1, 2, 3].mapWithIndex((e, i) => e * i), [0, 2, 6]);
+  expect([].mapWithIndex((e, i) => e * i), []);
+  expect([1, 2, 3].mapWithIndex((e, i) => e * i), [0, 2, 6]);
 });
 
 test("toChunks", () {
-	List<int> xw = [1, 2, 3, 4, 5];
-	Iterable<Iterable<int>> rw = xw.toChunks((int element) {
-		return element == 2;
-	});
+  List<int> xw = [1, 2, 3, 4, 5];
+  Iterable<Iterable<int>> rw = xw.toChunks((int element) {
+    return element == 2;
+  });
 
-	List<int> xy = [1, 2, 3, 2, 5];
-	Iterable<Iterable<int>> ry = xy.toChunks((int element) {
-		return element == 2;
-	});
+  List<int> xy = [1, 2, 3, 2, 5];
+  Iterable<Iterable<int>> ry = xy.toChunks((int element) {
+    return element == 2;
+  });
 
-	List<int> xz = [1, 2, 2, 4, 5];
-	Iterable<Iterable<int>> rz = xz.toChunks((int element) {
-		return element == 2;
-	});
+  List<int> xz = [1, 2, 2, 4, 5];
+  Iterable<Iterable<int>> rz = xz.toChunks((int element) {
+    return element == 2;
+  });
 
-	List<int> xv = [1, 2, 2, 4, 2];
-	Iterable<Iterable<int>> rv = xv.toChunks((int element) {
-		return element == 2;
-	});
+  List<int> xv = [1, 2, 2, 4, 2];
+  Iterable<Iterable<int>> rv = xv.toChunks((int element) {
+    return element == 2;
+  });
 
-	expect([].toChunks((element) => true), [[]]);
+  expect([].toChunks((element) => true), [[]]);
 
-	expect(rw, [
-		[1, 2],
-		[3, 4, 5]
-	]);
+  expect(rw, [
+    [1, 2],
+    [3, 4, 5]
+  ]);
 
-	expect(ry, [
-		[1, 2],
-		[3, 2],
-		[5]
-	]);
+  expect(ry, [
+    [1, 2],
+    [3, 2],
+    [5]
+  ]);
 
-	expect(rz, [
-		[1, 2],
-		[2],
-		[4, 5]
-	]);
+  expect(rz, [
+    [1, 2],
+    [2],
+    [4, 5]
+  ]);
 
-	expect(rv, [
-		[1, 2],
-		[2],
-		[4, 2],
-	]);
+  expect(rv, [
+    [1, 2],
+    [2],
+    [4, 2],
+  ]);
 });
 
-test('toMap should convert an iterable of MapEntry to a Map', () {
-	Iterable<MapEntry<String, int>> input = [
-		const MapEntry('a', 1),
-		const MapEntry('b', 2),
-		const MapEntry('c', 3)
-	];
-	Map<String, int> output = input.toMap();
-	expect(output, {'a': 1, 'b': 2, 'c': 3});
+test('toMap', () {
+  Iterable<MapEntry<String, int>> input = [
+    const MapEntry('a', 1),
+    const MapEntry('b', 2),
+    const MapEntry('c', 3)
+  ];
+  Map<String, int> output = input.toMap();
+  expect(output, {'a': 1, 'b': 2, 'c': 3});
 });
 
-test('toMap should throw a type error when called on a non-MapEntry iterable',
-		() {
-	Iterable<String> input = ['a', 'b', 'c'];
-	expect(() => input.toMap(), throwsA(isA<TypeError>()));
+test('toMap error', () {
+  Iterable<String> input = ['a', 'b', 'c'];
+  expect(() => input.toMap(), throwsA(isA<TypeError>()));
 });
 
 test("Combinations", () {
-	final values = [1, 2, 3];
-	expect(values.combinations(2), [
-		[1, 2],
-		[1, 3],
-		[2, 3]
-	]);
+  final values = [1, 2, 3];
+  expect(values.combinations(2), [
+    [1, 2],
+    [1, 3],
+    [2, 3]
+  ]);
 });
 
 test("Mean (Average)", () {
-	final values = [1.0, 2.0, 3.0, 4.0, 5];
-	expect(values.mean(), 3.0);
+  final values = [1.0, 2.0, 3.0, 4.0, 5];
+  expect(values.mean(), 3.0);
 });
 
 test("Max", () {
-	final values = [0, -4, 6, 2];
-	expect(values.findMax(), 6);
+  final values = [0, -4, 6, 2];
+  expect(values.findMax(), 6);
 });
 
 (test("Weighted Average", () {
-	final values = [1, 2, 3];
-	expect(values.weightedAverage(), 1.0);
+  final values = [1, 2, 3];
+  expect(values.weightedAverage(), 1.0);
 }));
 ```
 
