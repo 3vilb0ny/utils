@@ -10,6 +10,7 @@ This is a repository to store all usable functions/methods I developed
 ## Frameworks
 
 - Flutter
+- NestJs
 
 ### Notes
 
