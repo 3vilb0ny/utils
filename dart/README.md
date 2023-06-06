@@ -355,3 +355,120 @@ String dateTimeToString(DateTime date) {
 }
 
 ```
+
+## File Service & File cache service
+
+1. File Service
+
+   ```dart
+   import 'dart:io';
+
+   import 'package:flutter_dotenv/flutter_dotenv.dart';
+   import 'package:followit/falvors.dart';
+   import 'package:path_provider/path_provider.dart';
+
+   abstract class FileService {
+     static Future<String> get localPath async {
+       final directory = await getApplicationDocumentsDirectory();
+       return directory.path;
+     }
+
+     static Future<Directory> get tempDirectory async {
+       return await getTemporaryDirectory();
+     }
+
+     static Future<String> get tempPath async {
+       return (await tempDirectory).path;
+     }
+
+     static Future<File> get localStorageActionsFile async {
+       final path = await localPath;
+       // Environment variables
+       if (!dotenv.isInitialized) {
+         await dotenv.load(fileName: ".env");
+       }
+
+       String baseFile = dotenv.env["LOCAL_STORAGE_ACTIONS"]!;
+
+       File file = File(
+           '$path/${baseFile}_${FlavorsE.instance.getFlavor().name}.json');
+       if (!await file.exists()) {
+         file.create();
+       }
+       return file;
+     }
+
+     static Future<void> writeLocalStorageActionsFile(String s) async {
+       await (await FileService.localStorageActionsFile)
+           .writeAsString(s, mode: FileMode.write);
+     }
+   }
+   ```
+
+2. File Cache Service
+
+   ```dart
+   import 'dart:io';
+
+   import 'package:flutter/services.dart';
+   import 'package:followit/src/services/file_service.dart';
+
+   class FileCacheService {
+     static FileCacheService? _instance;
+     final String tempPath;
+
+     FileCacheService({required this.tempPath});
+
+     static Future<FileCacheService> getInstance() async {
+       _instance ??= FileCacheService(tempPath: await FileService.tempPath);
+       return _instance!;
+     }
+
+     String _storePath(String url) {
+       return url
+           .trim()
+           .toLowerCase()
+           .replaceAll('/', '_')
+           .replaceAll('.', '_')
+           .replaceAll(':', '_');
+     }
+
+     Future<Uint8List?> getFileBytes(String url) async {
+       String storeUrl = _storePath(url);
+
+       String path = "$tempPath/$storeUrl";
+       if (File(path).existsSync()) {
+         return File(path).readAsBytesSync();
+       }
+       return null;
+     }
+
+     void storeFileBytes(String url, Uint8List bytes) {
+       String storeUrl = _storePath(url);
+
+       String path = "$tempPath/$storeUrl";
+
+       File(path).writeAsBytes(bytes);
+     }
+   }
+   ```
+
+3. Usage [Ex: HTTPService]
+
+   ```dart
+   /// Endpoint request
+   String path = "${dotenv.env['API_URL']}/$endpoint";
+   FileCacheService fcs = await FileCacheService.getInstance();
+   Uint8List? fb = await fcs.getFileBytes(path);
+   if (fb != null) {
+     return fb;
+   }
+   /// Make the request
+
+   /// Store into FileCacheService
+   if (response.statusCode == 200) {
+     fb = response.bodyBytes;
+     fcs.storeFileBytes(path, fb);
+     return fb;
+   }
+   ```
