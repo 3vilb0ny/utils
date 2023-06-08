@@ -472,3 +472,94 @@ String dateTimeToString(DateTime date) {
      return fb;
    }
    ```
+
+## Isolate Task With Arguments & Environment Variables
+
+```dart
+import 'dart:async';
+import 'dart:isolate';
+
+import 'package:aico/services/env.dart';
+
+class IsolateData {
+  final SendPort sendPort;
+  final Map<String, String> env;
+  final List<dynamic>? args;
+  final Function task;
+
+  const IsolateData({
+    required this.sendPort,
+    required this.env,
+    required this.args,
+    required this.task,
+  });
+}
+
+Future<T> runTaskIsolated<T>(
+  Function(List<dynamic>? args) task, {
+    List<dynamic>? args,
+}) async {
+  Completer<T> completer = Completer<T>();
+
+  // Communication channel for success response
+  ReceivePort isolateToMainStream = ReceivePort();
+
+  // Communication channel for error response
+  ReceivePort isolateToMainStreamError = ReceivePort();
+
+  // Data to send to isolate
+  IsolateData auxD = IsolateData(
+    sendPort: isolateToMainStream.sendPort,
+    env: Env.data,
+    args: args,
+    task: task,
+  );
+
+  // Spawn Task
+  await Isolate.spawn((IsolateData data) {
+    Env(data.env);
+    data.sendPort.send(data.task(data.args));
+  }, auxD, onError: isolateToMainStreamError.sendPort);
+
+  // End future
+  isolateToMainStream.listen((message) {
+    completer.complete(message);
+  });
+
+  // Handle errors
+  isolateToMainStreamError.listen((e) {
+    List errors = e as List;
+    completer.completeError(errors.first);
+  });
+
+  return completer.future;
+}
+
+```
+
+**Env Class**
+
+```dart
+class Env {
+  Env._privateConstructor(Map<String, String> data) {
+    _data = data;
+  }
+
+  static late final Env _instance;
+  static late final Map<String, String>? _data;
+
+  factory Env(Map<String, String> data) {
+    _instance = Env._privateConstructor(data);
+    return _instance;
+  }
+
+  static Map<String, String> get data => _data ?? {};
+}
+
+```
+
+**Usage**
+
+```dart
+final result = await runTaskIsolated<ReturnedDataType>((args) => someTask(args), args: [...]);
+```
