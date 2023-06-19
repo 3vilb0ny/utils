@@ -53,13 +53,13 @@ test("String format", () {
 
 ```dart
 extension Iterables<E> on Iterable<E> {
-  /// Groups an iterable by an Object property
+  /// Groups an [Iterable] by an Object property.
   Map<K, List<E>> groupBy<K>(K Function(E element) keyFunction) => fold(
       <K, List<E>>{},
       (Map<K, List<E>> map, E element) =>
           map..putIfAbsent(keyFunction(element), () => <E>[]).add(element));
 
-  /// Returns the index of given element founded first
+  /// Returns the index of given element founded first.
   int indexOf(E element) {
     for (int i = 0; i < length; i++) {
       if (elementAt(i).toString() == element.toString()) return i;
@@ -67,7 +67,7 @@ extension Iterables<E> on Iterable<E> {
     return -1;
   }
 
-  /// Normal map function with the element index as an argument too
+  /// Normal map function with the element index as an argument too.
   Iterable<T> mapWithIndex<T>(T Function(E e, int i) toElement) sync* {
     int index = 0;
     for (var value in this) {
@@ -75,7 +75,7 @@ extension Iterables<E> on Iterable<E> {
     }
   }
 
-  /// Split an iterable into multi iterables based on a test function
+  /// Split an [Iterable] into multi [Iterable]s based on a test function.
   Iterable<Iterable<E>> toChunks(bool Function(E element) test) sync* {
     if (length <= 0) {
       yield [];
@@ -92,7 +92,7 @@ extension Iterables<E> on Iterable<E> {
     if (chunk.isNotEmpty) yield chunk;
   }
 
-  /// Insterts an element between every element in the Iterable
+  /// Insterts an element between every element in the Iterable.
   Iterable<E> insertBetween<T>(E element) sync* {
     final int length = this.length;
 
@@ -112,17 +112,17 @@ extension Iterables<E> on Iterable<E> {
     yield iterator.current;
   }
 
-  /// Converts an Iterable<MapEntry<K, V>> to Map<K, V>
+  /// Converts an Iterable<MapEntry<K, V>> to Map<K, V>.
   Map<K, V> toMap<K, V>() {
-		if (this is! Iterable<MapEntry<K, V>>) {
+    if (this is! Iterable<MapEntry<K, V>>) {
       throw TypeError();
     }
     return Map.fromEntries(this as Iterable<MapEntry<K, V>>);
   }
 
-  /// Combine an iterable into an iterable of List of desired length
+  /// Combine an [Iterable] into an [Iterable] of List of desired length.
   ///
-  /// [1, 2, 3].combinations(2) ==> [[1, 2], [1, 3], [2, 3]]
+  /// [1, 2, 3].combinations(2) ==> [[1, 2], [1, 3], [2, 3]].
   Iterable<List<E>> combinations([int n = 2]) sync* {
     if (n == 0) {
       yield [];
@@ -145,9 +145,9 @@ extension Iterables<E> on Iterable<E> {
   }
 
   /// Largest absolute value of the difference of each element, divided by the
-  /// length
+  /// length.
   ///
-  /// Each value of the iterable must be [num] type
+  /// Each value of the [Iterable] must be [num] type.
   double weightedAverage() {
     num ret = 0;
     if (length < 2) {
@@ -162,12 +162,12 @@ extension Iterables<E> on Iterable<E> {
     return ret as double;
   }
 
-  /// Mean ("average") for an iterable of any data type.
+  /// Mean ("average") for an [Iterable] of any data type.
   ///
   /// The mean is calculated as the sum of all the elements divided by the
   /// number of elements.
   ///
-  /// Each value of the iterable must be [num] type
+  /// Each value of the [Iterable] must be [num] type
   double mean() {
     if (length == 0) {
       return 0.0;
@@ -179,12 +179,12 @@ extension Iterables<E> on Iterable<E> {
     return sum / length;
   }
 
-  /// Find the maximum value in an iterable of any data type.
+  /// Find the maximum value in an [Iterable] of any data type.
   ///
-  /// Each value of the iterable must be [num] type
+  /// Each value of the [Iterable] must be [num] type.
   E findMax() {
     if (isEmpty) {
-      throw StateError('Cannot find maximum value in an empty iterable');
+      throw StateError('Cannot find maximum value in an empty [Iterable]');
     }
     E max = first;
     for (E element in skip(1)) {
@@ -194,7 +194,49 @@ extension Iterables<E> on Iterable<E> {
     }
     return max;
   }
-}
+
+  /// Applies an operation between the elements of one [Iterable] and the elements
+  /// of the [other] [Iterable].
+  ///
+  /// [1, 2, 3].operateWith([1, 2, 3], (a, b) => a + b) ==> [2, 4, 6]
+  Iterable<R?> operateWith<R>(
+      Iterable<E?> other, R Function(E, E) operation) sync* {
+    final iterator1 = iterator;
+    final iterator2 = other.iterator;
+
+    while (iterator1.moveNext() && iterator2.moveNext()) {
+      final current1 = iterator1.current;
+      final current2 = iterator2.current;
+
+      if (current1 == null || current2 == null) {
+        yield null;
+        continue;
+      }
+      yield operation(current1, current2);
+    }
+  }
+
+  /// Performs an operation in the same index of the elements in a
+  /// bidimensional [Iterable].
+  ///
+  /// [[1, 2, 3], [4, 5, 6]].calulateInColumn((a, b) => a + b, 3)
+  /// ==> [5, 7, 9]
+  Iterable<num> calculateInColumn(num Function(num, num) operation) sync* {
+    if (isEmpty) {
+      yield* [];
+      return;
+    }
+    List<num> result =
+        ((this as Iterable<Iterable<num>>).elementAt(0)).toList();
+
+    for (E e in skip(1)) {
+      result = result
+          .operateWith(e as Iterable<num>, operation)
+          .cast<num>()
+          .toList();
+    }
+    yield* result;
+  }
 
 /// Tests
 test("groupBy", () {
@@ -314,6 +356,41 @@ test("Max", () {
   final values = [1, 2, 3];
   expect(values.weightedAverage(), 1.0);
 }));
+
+group('calculateInColumn', () {
+    test('should calculate sum in each column', () {
+      final data = [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ];
+
+      final columnSums = data.calculateInColumn((a, b) => a + b).toList();
+
+      expect(columnSums, equals([12, 15, 18]));
+    });
+
+    test('should calculate product in each column', () {
+      final data = [
+        [1, 2, 3],
+        [4, 5, 6],
+        [7, 8, 9],
+      ];
+
+      final columnProducts = data.calculateInColumn((a, b) => a * b).toList();
+
+      expect(columnProducts, equals([28, 80, 162]));
+    });
+
+    test('should return zeros if data is empty', () {
+      final emptyData = <List<num>>[];
+
+      final columnSums = emptyData.calculateInColumn((a, b) => a + b).toList();
+
+      expect(columnSums, equals([]));
+    });
+  });
+
 ```
 
 ## Double extension
